@@ -42,10 +42,10 @@ export default class Ship {
   }
 
   rotate(dir){
-    if (dir == 'LEFT') {
+    if (dir === 'LEFT') {
       this.rotation -= this.rotationSpeed;
     }
-    if (dir == 'RIGHT') {
+    if (dir === 'RIGHT') {
       this.rotation += this.rotationSpeed;
     }
   }
@@ -82,7 +82,7 @@ export default class Ship {
     if(state.keys.right){
       this.rotate('RIGHT');
     }
-    if(state.keys.space && Date.now() - this.lastShot > 300){
+    if(state.keys.shoot && Date.now() - this.lastShot > 300){
       const bullet = new Bullet({ship: this});
       this.create(bullet, 'bullets');
       this.lastShot = Date.now();
