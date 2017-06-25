@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Ship from './Ship';
 import Asteroid from './Asteroid';
-//import Button from './Button';
+import ControlButton from './ControlButton';
 import { randomNumBetweenExcluding } from './helpers'
 
 const KEY = {
@@ -29,7 +29,7 @@ export class Reacteroids extends Component {
         right : 0,
         up    : 0,
         down  : 0,
-        space : 0,
+        shoot : 0,
       },
       asteroidCount: 3,
       currentScore: 0,
@@ -42,7 +42,7 @@ export class Reacteroids extends Component {
     this.particles = [];
   }
 
-  handleResize(value, e){
+  handleResize() {
     this.setState({
       screen : {
         width: window.innerWidth,
@@ -52,21 +52,43 @@ export class Reacteroids extends Component {
     });
   }
 
-  handleKeys(value, e){
+  handleKeys(value, e) {
     let keys = this.state.keys;
     if(e.keyCode === KEY.LEFT   || e.keyCode === KEY.A) keys.left  = value;
     if(e.keyCode === KEY.RIGHT  || e.keyCode === KEY.D) keys.right = value;
     if(e.keyCode === KEY.UP     || e.keyCode === KEY.W) keys.up    = value;
-    if(e.keyCode === KEY.SPACE) keys.space = value;
+    if(e.keyCode === KEY.SPACE) keys.shoot = value;
     this.setState({
       keys : keys
+    });
+  }
+
+  handlePress(action , e) {
+    e.preventDefault();
+    console.log('press', action);
+
+    let keys = this.state.keys;
+    keys[action] = true;
+    this.setState({
+      keys: keys
+    });
+  }
+
+  handleRelease(action, e) {
+    e.preventDefault();
+    console.log('release', action);
+
+    let keys = this.state.keys;
+    keys[action] = false;
+    this.setState({
+      keys: keys
     });
   }
 
   componentDidMount() {
     window.addEventListener('keyup',   this.handleKeys.bind(this, false));
     window.addEventListener('keydown', this.handleKeys.bind(this, true));
-    window.addEventListener('resize',  this.handleResize.bind(this, false));
+    window.addEventListener('resize',  this.handleResize.bind(this));
 
     const context = this.refs.canvas.getContext('2d');
     this.setState({ context: context });
@@ -82,8 +104,6 @@ export class Reacteroids extends Component {
 
   update() {
     const context = this.state.context;
-    const keys = this.state.keys;
-    const ship = this.ship[0];
 
     context.save();
     context.scale(this.state.screen.ratio, this.state.screen.ratio);
@@ -129,6 +149,12 @@ export class Reacteroids extends Component {
     this.setState({
       inGame: true,
       currentScore: 0,
+      keys: {
+        up: false,
+        left: false,
+        right: false,
+        shoot: false
+      }
     });
 
     // Make ship
@@ -162,7 +188,6 @@ export class Reacteroids extends Component {
   }
 
   generateAsteroids(howMany){
-    let asteroids = [];
     let ship = this.ship[0];
     for (let i = 0; i < howMany; i++) {
       let asteroid = new Asteroid({
@@ -221,7 +246,6 @@ export class Reacteroids extends Component {
   }
 
   render() {
-    let endgame;
     let message;
 
     if (this.state.currentScore <= 0) {
@@ -232,28 +256,50 @@ export class Reacteroids extends Component {
       message = this.state.currentScore + ' Points though :)'
     }
 
-    if(!this.state.inGame){
-      endgame = (
-        <div className="endgame">
-          <p>Game over, man!</p>
-          <p>{message}</p>
-          <button
-            onClick={ this.startGame.bind(this) }>
-            try again?
-          </button>
-        </div>
-      )
-    }
-
     return (
       <div>
-        { endgame }
+        { !this.state.inGame &&
+          <div className="endgame">
+            <p>Game over, man!</p>
+            <p>{message}</p>
+            <button
+              onClick={ this.startGame.bind(this) }>
+              try again?
+            </button>
+          </div>
+        }
         <span className="score current-score" >Score: {this.state.currentScore}</span>
         <span className="score top-score" >Top Score: {this.state.topScore}</span>
-        <span className="controls" >
-          Use [A][S][W][D] or [←][↑][↓][→] to MOVE<br/>
-          Use [SPACE] to SHOOT
-        </span>
+        {
+          this.state.inGame &&
+          <div style={{
+            position: 'absolute',
+            bottom: '0',
+            left: '0',
+            zIndex: 1
+          }}>
+            <ControlButton
+              onPress={this.handlePress.bind(this, 'left')}
+              onRelease={this.handleRelease.bind(this, 'left')}
+              text={'[←]'}
+            />
+            <ControlButton
+              onPress={this.handlePress.bind(this, 'up')}
+              onRelease={this.handleRelease.bind(this, 'up')}
+              text={'[↑]'}
+            />
+            <ControlButton
+              onPress={this.handlePress.bind(this, 'shoot')}
+              onRelease={this.handleRelease.bind(this, 'shoot')}
+              text={'SHOOT'}
+            />
+            <ControlButton
+              onPress={this.handlePress.bind(this, 'right')}
+              onRelease={this.handleRelease.bind(this, 'right')}
+              text={'[→]'}
+            />
+          </div>
+        }
         <canvas ref="canvas"
           width={this.state.screen.width * this.state.screen.ratio}
           height={this.state.screen.height * this.state.screen.ratio}
