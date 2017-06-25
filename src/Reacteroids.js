@@ -36,15 +36,25 @@ export class Reacteroids extends Component {
       asteroidCount: 3,
       currentScore: 0,
       topScore: localStorage['topscore'] || 0,
-      inGame: false
+      inGame: false,
+      beginning: false,
+      username: 'Unknown player',
+      otherUser: null,
+      otherScore: null,
     }
     this.ship = [];
     this.asteroids = [];
     this.bullets = [];
     this.particles = [];
+<<<<<<< 260aebfd3eea765901664d7499525aeacba6e0d0
 
     socket.on('newPlayer', (msg) => {
       console.log(msg);
+=======
+    socket.on('score', (username, score) => {
+      console.log(username, score);
+      this.setState({otherScore:score,otherUser:username});
+>>>>>>> Add other user score live
     });
   }
 
@@ -98,8 +108,7 @@ export class Reacteroids extends Component {
 
     const context = this.refs.canvas.getContext('2d');
     this.setState({ context: context });
-    this.startGame();
-    requestAnimationFrame(() => {this.update()});
+    this.askForUserName();
   }
 
   componentWillUnmount() {
@@ -151,6 +160,16 @@ export class Reacteroids extends Component {
     }
   }
 
+  askForUserName() {
+    this.setState({ beginning: true });
+  }
+
+  startFirstGame() {
+    this.setState({ beginning: false });
+    this.startGame();
+    requestAnimationFrame(() => {this.update()});
+  }
+
   startGame(){
     socket.emit('startGame');
 
@@ -183,6 +202,7 @@ export class Reacteroids extends Component {
   }
 
   gameOver(){
+    socket.emit('score', this.state.username, this.state.currentScore);
     this.setState({
       inGame: false,
     });
@@ -256,6 +276,10 @@ export class Reacteroids extends Component {
     return false;
   }
 
+  setUsername(username: string) {
+    this.setState({ username });
+  }
+
   render() {
     let message;
 
@@ -269,7 +293,18 @@ export class Reacteroids extends Component {
 
     return (
       <div>
-        { !this.state.inGame &&
+        { this.state.beginning &&
+          <div className="endgame">
+            <p>Welcome, please enter your name!</p>
+            <input onChange={(e) => this.setUsername(e.target.value)}/>
+
+            <button
+              onClick={ this.startFirstGame.bind(this) }>
+              Start
+            </button>
+          </div>
+        }
+        { !this.state.inGame && !this.state.beginning &&
           <div className="endgame">
             <p>Game over, man!</p>
             <p>{message}</p>
@@ -282,33 +317,60 @@ export class Reacteroids extends Component {
         <span className="score current-score" >Score: {this.state.currentScore}</span>
         <span className="score top-score" >Top Score: {this.state.topScore}</span>
         {
+          this.state.inGame && this.state.otherUser &&
+          <div style={{
+            position: 'absolute',
+            top: '40px',
+            right: '0',
+            zIndex: 1,
+            fontSize: 30,
+          }}>
+            {this.state.otherUser} scored {this.state.otherScore} !
+          </div>
+        }
+        {
           this.state.inGame &&
           <div style={{
             position: 'absolute',
             bottom: '0',
             left: '0',
-            zIndex: 1
+            zIndex: 1,
+            width: '100%',
           }}>
-            <ControlButton
-              onPress={this.handlePress.bind(this, 'left')}
-              onRelease={this.handleRelease.bind(this, 'left')}
-              text={'[←]'}
-            />
-            <ControlButton
-              onPress={this.handlePress.bind(this, 'up')}
-              onRelease={this.handleRelease.bind(this, 'up')}
-              text={'[↑]'}
-            />
-            <ControlButton
-              onPress={this.handlePress.bind(this, 'shoot')}
-              onRelease={this.handleRelease.bind(this, 'shoot')}
-              text={'SHOOT'}
-            />
-            <ControlButton
-              onPress={this.handlePress.bind(this, 'right')}
-              onRelease={this.handleRelease.bind(this, 'right')}
-              text={'[→]'}
-            />
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+              }}
+            >
+              <ControlButton
+                onPress={this.handlePress.bind(this, 'up')}
+                onRelease={this.handleRelease.bind(this, 'up')}
+                text={'[↑]'}
+              />
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+              }}
+            >
+              <ControlButton
+                onPress={this.handlePress.bind(this, 'left')}
+                onRelease={this.handleRelease.bind(this, 'left')}
+                text={'[←]'}
+              />
+              <ControlButton
+                onPress={this.handlePress.bind(this, 'shoot')}
+                onRelease={this.handleRelease.bind(this, 'shoot')}
+                text={'SHOOT'}
+              />
+              <ControlButton
+                onPress={this.handlePress.bind(this, 'right')}
+                onRelease={this.handleRelease.bind(this, 'right')}
+                text={'[→]'}
+              />
+            </div>
           </div>
         }
         <canvas ref="canvas"
