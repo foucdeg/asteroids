@@ -46,15 +46,10 @@ export class Reacteroids extends Component {
     this.asteroids = [];
     this.bullets = [];
     this.particles = [];
-<<<<<<< 260aebfd3eea765901664d7499525aeacba6e0d0
 
-    socket.on('newPlayer', (msg) => {
-      console.log(msg);
-=======
     socket.on('score', (username, score) => {
       console.log(username, score);
       this.setState({otherScore:score,otherUser:username});
->>>>>>> Add other user score live
     });
   }
 
