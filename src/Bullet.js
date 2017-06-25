@@ -14,7 +14,7 @@ export default class Bullet {
     };
     this.radius = 2;
   }
-
+  
   destroy(){
     this.delete = true;
   }
