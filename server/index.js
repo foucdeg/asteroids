@@ -15,14 +15,11 @@ app.get('/', (req, res) => {
 io.on('connection', (socket) => {
   console.log('a user connected');
 
-  socket.on('startGame', () => {
-    console.log('a user join the game room');
-    io.emit('newPlayer', 'Hi');
+  socket.on('score', (username, score) => {
+    console.log('SCORE', `${username} scored ${score}`);
+    socket.broadcast.emit('score', username, score);
   });
 
-  socket.on('endGame', () => {
-    console.log('a user left the game room');
-  });
 
   socket.on('disconnect', function(){
     console.log('user disconnected');
