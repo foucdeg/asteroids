@@ -3,6 +3,8 @@ import Ship from './Ship';
 import Asteroid from './Asteroid';
 import ControlButton from './ControlButton';
 import { randomNumBetweenExcluding } from './helpers'
+import io from 'socket.io-client';
+const socket = io(document.location.origin, {path: '/api/socket.io'});
 
 const KEY = {
   LEFT:  37,
@@ -40,6 +42,10 @@ export class Reacteroids extends Component {
     this.asteroids = [];
     this.bullets = [];
     this.particles = [];
+
+    socket.on('newPlayer', (msg) => {
+      console.log(msg);
+    });
   }
 
   handleResize() {
@@ -146,6 +152,8 @@ export class Reacteroids extends Component {
   }
 
   startGame(){
+    socket.emit('startGame');
+
     this.setState({
       inGame: true,
       currentScore: 0,
@@ -156,6 +164,7 @@ export class Reacteroids extends Component {
         shoot: false
       }
     });
+
 
     // Make ship
     let ship = new Ship({
@@ -177,6 +186,8 @@ export class Reacteroids extends Component {
     this.setState({
       inGame: false,
     });
+
+    socket.emit('endGame', this.state.currentScore);
 
     // Replace top score
     if(this.state.currentScore > this.state.topScore){
