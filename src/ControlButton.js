@@ -6,7 +6,7 @@ export default class ControlButton extends React.Component {
       <button
         style={{
           flex: '1 1 0',
-          '-webkit-user-select': 'none',
+          WebkitUserSelect: 'none',
         }}
         onMouseDown={this.props.onPress}
         onMouseUp={this.props.onRelease}

@@ -16,7 +16,7 @@ const KEY = {
   SPACE: 32
 };
 
-export class Reacteroids extends Component {
+export class Game extends Component {
   constructor() {
     super();
     this.state = {
@@ -38,7 +38,7 @@ export class Reacteroids extends Component {
       topScore: localStorage['topscore'] || 0,
       inGame: false,
       beginning: false,
-      username: 'Unknown player',
+      username: '',
       otherUser: null,
       otherScore: null,
     }
@@ -94,6 +94,10 @@ export class Reacteroids extends Component {
     this.setState({
       keys: keys
     });
+  }
+
+  handleUsernameChange(e) {
+    this.setState({ username: e.target.value });
   }
 
   componentDidMount() {
@@ -159,7 +163,8 @@ export class Reacteroids extends Component {
     this.setState({ beginning: true });
   }
 
-  startFirstGame() {
+  startFirstGame(e) {
+    e.preventDefault();
     this.setState({ beginning: false });
     this.startGame();
     requestAnimationFrame(() => {this.update()});
@@ -271,10 +276,6 @@ export class Reacteroids extends Component {
     return false;
   }
 
-  setUsername(username: string) {
-    this.setState({ username });
-  }
-
   render() {
     let message;
 
@@ -289,19 +290,23 @@ export class Reacteroids extends Component {
     return (
       <div>
         { this.state.beginning &&
-          <div className="endgame">
+          <form
+            className="endgame"
+            onSubmit={this.startFirstGame.bind(this)}
+          >
             <p>Welcome, please enter your name!</p>
-            <input onChange={(e) => this.setUsername(e.target.value)}/>
-
-            <button
-              onClick={ this.startFirstGame.bind(this) }>
-              Start
-            </button>
-          </div>
+            <input
+              type="text"
+              autoFocus
+              className="fat-button"
+              value={this.state.username}
+              onChange={this.handleUsernameChange.bind(this)}
+            />
+          </form>
         }
         { !this.state.inGame && !this.state.beginning &&
           <div className="endgame">
-            <p>Game over, man!</p>
+            <p>Game over, {this.state.username }!</p>
             <p>{message}</p>
             <button
               onClick={ this.startGame.bind(this) }>
@@ -309,8 +314,11 @@ export class Reacteroids extends Component {
             </button>
           </div>
         }
-        <span className="score current-score" >Score: {this.state.currentScore}</span>
-        <span className="score top-score" >Top Score: {this.state.topScore}</span>
+        {
+          this.state.inGame &&
+          <span className="score current-score">{this.state.username}'s Score: {this.state.currentScore}</span>
+        }
+        <span className="score top-score">Top Score: {this.state.topScore}</span>
         {
           this.state.inGame && this.state.otherUser &&
           <div style={{

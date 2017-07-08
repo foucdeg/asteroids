@@ -62,3 +62,17 @@ button:hover{
   background-color: #ffffff;
   color: #000000;
 }
+
+input.fat-button {
+  border: 2px solid #ffffff;
+  background-color: transparent;
+  color: #ffffff;
+  font-size: 14px;
+  padding: 5px 10px;
+  margin: 5px;
+  font-family: 'PT Mono', serif;
+}
+
+input.fat-button:focus {
+  outline: 0;
+}
